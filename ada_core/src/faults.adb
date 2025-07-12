@@ -1,31 +1,45 @@
-with Reactor; use Reactor;
+with Interfaces.C;
+use Interfaces.C;
+with Reactor;
+
 package body Faults is
-   procedure Inject_Fault(State : in out Reactor_State; Fault_ID : Integer) is
+
+   procedure Apply_Faults (State : in out Reactor.Reactor_State) is
+      F : constant Integer := Integer(State.Failure);
    begin
-      case Fault_ID is
-         when 1 =>
-            State.Coolant_Flow := 0.0;
-            State.Pump_On := False;
-            State.Alert_Flag := True;
-            State.Fault_Message := "Pump Failure" & (1..88 => ' ');
-         when 2 =>
-            State.Valve_Position := 0.0;
-            State.Alert_Flag := True;
-            State.Fault_Message := "Valve Jammed" & (1..87 => ' ');
-         when 3 =>
-            State.Control_Rods := 0.0;
-            State.Alert_Flag := True;
-            State.Fault_Message := "Rod Stuck Out" & (1..86 => ' ');
+      case F is
+         when 0 => null; -- None
+         when 1 => -- Leak
+            State.Flow := State.Flow - Interfaces.C.double(3.0);
+            State.Pressure := State.Pressure - Interfaces.C.double(2.0);
+            State.Temperature := State.Temperature + Interfaces.C.double(1.5);
+         when 2 => -- Pump failure
+            State.Pump_On := Interfaces.C.int(0);
+         when 3 => -- Stuck valve
+            State.Valve_Open := Interfaces.C.int(0);
+         when 4 => -- Power loss
+            State.Pump_On := Interfaces.C.int(0);
+         when 5 => -- Sensor failure
+            null;
+         when 6 => -- Overheating
+            State.Temperature := State.Temperature + Interfaces.C.double(10.0);
+         when 7 => -- SCRAM failure
+            State.Temperature := State.Temperature + Interfaces.C.double(15.0);
+         when 8 => -- Flooding
+            State.Flow := State.Flow + Interfaces.C.double(5.0);
+            State.Pressure := State.Pressure - Interfaces.C.double(2.0);
+         when 9 => -- Pipe blockage
+            State.Flow := State.Flow - Interfaces.C.double(4.0);
+            State.Pressure := State.Pressure + Interfaces.C.double(2.0);
+         when 10 => -- Stuck control rod
+            State.Temperature := State.Temperature + Interfaces.C.double(3.0);
+         when 11 => -- Loss of cooling
+            State.Flow := State.Flow - Interfaces.C.double(8.0);
+            State.Temperature := State.Temperature + Interfaces.C.double(4.0);
+         when 12 => -- Air ingress
+            State.Pressure := State.Pressure - Interfaces.C.double(3.0);
          when others =>
             null;
       end case;
-   end Inject_Fault;
-
-   procedure Check_Faults(State : in out Reactor_State) is
-   begin
-      if State.Core_Temperature > 500.0 then
-         State.Alert_Flag := True;
-         State.Fault_Message := "Overheat!" & (1..92 => ' ');
-      end if;
-   end Check_Faults;
+   end Apply_Faults;
 end Faults;

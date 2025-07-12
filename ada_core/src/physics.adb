@@ -1,18 +1,35 @@
-with Reactor; use Reactor;
+with Interfaces.C;
+use Interfaces.C;
+with Reactor;
+
 package body Physics is
-   procedure Update_Physics(State : in out Reactor_State) is
+
+   procedure Update_Physics (State : in out Reactor.Reactor_State) is
    begin
-      -- Simulação simplificada:
-      -- Temperatura sobe se barras de controle estão baixas, desce se fluxo do refrigerante alto
-      State.Core_Temperature :=
-         State.Core_Temperature
-         + 10.0 * (1.0 - State.Control_Rods)
-         - 5.0 * State.Coolant_Flow * State.Valve_Position;
-
-      if State.Core_Temperature < 50.0 then
-         State.Core_Temperature := 50.0;
+      if State.Pump_On = Interfaces.C.int(1) and State.Valve_Open = Interfaces.C.int(1) then
+         State.Temperature := State.Temperature - Interfaces.C.double(0.3);
+         State.Pressure    := State.Pressure - Interfaces.C.double(0.1);
+         State.Flow        := State.Flow + Interfaces.C.double(0.3);
+      else
+         State.Temperature := State.Temperature + Interfaces.C.double(0.5);
+         State.Pressure    := State.Pressure + Interfaces.C.double(0.2);
+         State.Flow        := State.Flow - Interfaces.C.double(0.4);
       end if;
-
-      State.Pressure := 100.0 + (State.Core_Temperature - 300.0) * 0.2;
+      if State.Temperature < Interfaces.C.double(250.0) then
+         State.Temperature := Interfaces.C.double(250.0);
+      elsif State.Temperature > Interfaces.C.double(1200.0) then
+         State.Temperature := Interfaces.C.double(1200.0);
+      end if;
+      if State.Pressure < Interfaces.C.double(50.0) then
+         State.Pressure := Interfaces.C.double(50.0);
+      elsif State.Pressure > Interfaces.C.double(300.0) then
+         State.Pressure := Interfaces.C.double(300.0);
+      end if;
+      if State.Flow < Interfaces.C.double(0.0) then
+         State.Flow := Interfaces.C.double(0.0);
+      elsif State.Flow > Interfaces.C.double(200.0) then
+         State.Flow := Interfaces.C.double(200.0);
+      end if;
    end Update_Physics;
+
 end Physics;

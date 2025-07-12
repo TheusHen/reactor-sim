@@ -1,66 +1,57 @@
-# Simulador de Falhas Nucleares
+# Nuclear Failure Simulator in the Terminal (CLI Game)
 
-Um serious game/simulador de reator nuclear para treinamento, estudo e diversão, usando Ada (núcleo físico), Rust (FFI e UI), e WASM (frontend interativo).
+A serious game in the terminal simulating a nuclear reactor, with physics in Ada and a Rust interface.
 
-## Estrutura
+**This project was developed using Rust and Ada to deepen and broaden my skillset, especially geared towards applications in Aerospace Engineering.** - **[More about my journey](https://www.theushen.me)**
+
+## Structure
 
 ```
-reactor-sim/
-├── ada_core/     # Núcleo físico/simulação (Ada)
-├── rust_ui/      # FFI + UI WASM (Rust, yew)
-├── wasm_build/   # Frontend pronto para deploy (static)
+reactor-sim-terminal/
+├── ada_core/      # Physics/simulation core in Ada
+├── rust_cli/      # Terminal interface and FFI bridge in Rust
+├── Makefile       # Simplified build
 └── README.md
 ```
 
-## Como funciona
+## How to Run
 
-1. **Ada** modela o reator, expõe funções via C ABI.
-2. **Rust** (FFI) chama Ada, expõe para o frontend.
-3. **Rust (yew)** UI interativa, renderiza em WASM, chama FFI para alterar/ler estado.
-4. **Frontend** mostra painel, gráficos, controles, alertas.
+### Prerequisites
 
-## Build Local
+- [Rust](https://rustup.rs/)
+- [GNAT Ada Compiler](https://www.adacore.com/download)
+- `gprbuild` (to compile Ada)
+- `make` (Linux/macOS)
 
-**Pré-requisitos:**
-- Rust (`rustup`)
-- Ada (GNAT)
-- wasm-pack (`cargo install wasm-pack`)
-- cbindgen (para headers do FFI)
-- Python3 (opcional, para scripts)
+### Build
 
-**1. Compilar Ada como lib compartilhada:**
-```sh
-cd ada_core/src
-gnatmake -fPIC -shared -o ../build/libreactor.so reactor.adb
-# Gera ../build/libreactor.so
-```
+1. Compile everything:
+   ```
+   make
+   ```
 
-**2. Gerar bindings FFI (opcional):**
-```sh
-cbindgen --lang c --output rust_ui/reactor_ffi.h
-```
+2. Run the simulator:
+   ```
+   LD_LIBRARY_PATH=./ada_core/build ./rust_cli/target/release/reactor_sim_cli
+   ```
 
-**3. Compilar Frontend (Rust→WASM):**
-```sh
-cd rust_ui
-wasm-pack build --target web --out-dir ../wasm_build/pkg
-```
+> If you encounter FFI linking issues, see the tips at the end of this file.
 
-**4. Rodar local:**
-```sh
-cd wasm_build
-python3 -m http.server 8080
-# Acesse http://localhost:8080
-```
+## Components
 
-## Extensões sugeridas
+- **ada_core/**: Reactor physics, state control, failures.
+- **rust_cli/**: Dynamic CLI, interaction, logs, animations, FFI bridge.
 
-- Novos cenários: diferentes tipos de reator.
-- Gráficos em tempo real (plotters).
-- Exportação de logs/CSV.
-- Procedimentos de mitigação interativos.
-- Modo multiplayer (um usuário ativa falhas, outro mitiga).
+## Features
 
----
+- Real-time reactor panel.
+- Failure injection via keyboard.
+- Exportable logs in CSV.
+- Terminal animations and alerts.
+- Customizable scenarios and failures.
 
-**Este projeto é um ponto de partida para estudos de Engenharia Aerospacial, aprendendo Ada e Rust.**
+## FFI Build Tips
+
+- On Linux, Ada generates a `.so` and `.h` header for Rust to consume.
+- On Windows, you may need to adjust the `Makefile` and `Cargo.toml` for DLL.
+- Check paths in the build files.

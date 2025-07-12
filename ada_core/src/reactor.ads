@@ -1,29 +1,30 @@
+with Interfaces.C;
 package Reactor is
    type Reactor_State is record
-      Core_Temperature : Float;
-      Pressure         : Float;
-      Coolant_Flow     : Float;
-      Pump_On          : Boolean;
-      Valve_Position   : Float;
-      Control_Rods     : Float;
-      Alert_Flag       : Boolean;
-      Fault_Message    : String(1..100);
+      Temperature : Interfaces.C.double;
+      Pressure    : Interfaces.C.double;
+      Flow        : Interfaces.C.double;
+      Pump_On     : Interfaces.C.int;
+      Valve_Open  : Interfaces.C.int;
+      Failure     : Interfaces.C.int;
    end record;
+   pragma Convention (C, Reactor_State);
 
-   procedure Initialize;
+   procedure Init;
+   pragma Export (C, Init, "reactor_init");
+
    procedure Step;
-   procedure Set_Pump_Speed(Speed : Float);
-   procedure Set_Valve_Position(Pos : Float);
-   procedure Set_Control_Rods(Pos : Float);
-   procedure Inject_Fault(Fault_ID : Integer);
-   function Get_State return Reactor_State;
+   pragma Export (C, Step, "reactor_step");
 
-   -- FFI Exports
-   pragma Export(C, Initialize, "reactor_initialize");
-   pragma Export(C, Step, "reactor_step");
-   pragma Export(C, Set_Pump_Speed, "reactor_set_pump_speed");
-   pragma Export(C, Set_Valve_Position, "reactor_set_valve_position");
-   pragma Export(C, Set_Control_Rods, "reactor_set_control_rods");
-   pragma Export(C, Inject_Fault, "reactor_inject_fault");
-   pragma Export(C, Get_State, "reactor_get_state");
+   function Get_State return Reactor_State;
+   pragma Export (C, Get_State, "reactor_get_state");
+
+   procedure Set_Valve(Open : Interfaces.C.int);
+   pragma Export (C, Set_Valve, "reactor_set_valve");
+
+   procedure Set_Pump(On : Interfaces.C.int);
+   pragma Export (C, Set_Pump, "reactor_set_pump");
+
+   procedure Inject_Failure(F: Interfaces.C.int);
+   pragma Export (C, Inject_Failure, "reactor_inject_failure");
 end Reactor;

@@ -1,0 +1,7 @@
+project Ada_Core is
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+   for Library_Name use "reactor";
+   for Library_Dir use "build";
+   for Library_Kind use "dynamic";
+end Ada_Core;

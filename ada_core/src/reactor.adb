@@ -1,50 +1,54 @@
-with Reactor; use Reactor;
-with Physics;
-with Faults;
-package body Reactor is
-   Current_State : Reactor_State;
+with Interfaces.C;
+use Interfaces.C;
+with Physics, Faults;
 
-   procedure Initialize is
+package body Reactor is
+
+   State : Reactor_State := (
+      Temperature => Interfaces.C.double(300.0),
+      Pressure    => Interfaces.C.double(150.0),
+      Flow        => Interfaces.C.double(100.0),
+      Pump_On     => Interfaces.C.int(1),
+      Valve_Open  => Interfaces.C.int(1),
+      Failure     => Interfaces.C.int(0)
+   );
+
+   procedure Init is
    begin
-      Current_State.Core_Temperature := 300.0;
-      Current_State.Pressure := 100.0;
-      Current_State.Coolant_Flow := 1.0;
-      Current_State.Pump_On := True;
-      Current_State.Valve_Position := 1.0;
-      Current_State.Control_Rods := 0.5;
-      Current_State.Alert_Flag := False;
-      Current_State.Fault_Message := (others => ' ');
-   end Initialize;
+      State := (
+         Temperature => Interfaces.C.double(300.0),
+         Pressure    => Interfaces.C.double(150.0),
+         Flow        => Interfaces.C.double(100.0),
+         Pump_On     => Interfaces.C.int(1),
+         Valve_Open  => Interfaces.C.int(1),
+         Failure     => Interfaces.C.int(0)
+      );
+   end Init;
 
    procedure Step is
    begin
-      Physics.Update_Physics(Current_State);
-      Faults.Check_Faults(Current_State);
+      Physics.Update_Physics (State);
+      Faults.Apply_Faults (State);
    end Step;
-
-   procedure Set_Pump_Speed(Speed : Float) is
-   begin
-      Current_State.Coolant_Flow := Speed;
-      Current_State.Pump_On := (Speed > 0.1);
-   end Set_Pump_Speed;
-
-   procedure Set_Valve_Position(Pos : Float) is
-   begin
-      Current_State.Valve_Position := Pos;
-   end Set_Valve_Position;
-
-   procedure Set_Control_Rods(Pos : Float) is
-   begin
-      Current_State.Control_Rods := Pos;
-   end Set_Control_Rods;
-
-   procedure Inject_Fault(Fault_ID : Integer) is
-   begin
-      Faults.Inject_Fault(Current_State, Fault_ID);
-   end Inject_Fault;
 
    function Get_State return Reactor_State is
    begin
-      return Current_State;
+      return State;
    end Get_State;
+
+   procedure Set_Valve(Open : Interfaces.C.int) is
+   begin
+      State.Valve_Open := Open;
+   end Set_Valve;
+
+   procedure Set_Pump(On : Interfaces.C.int) is
+   begin
+      State.Pump_On := On;
+   end Set_Pump;
+
+   procedure Inject_Failure(F: Interfaces.C.int) is
+   begin
+      State.Failure := F;
+   end Inject_Failure;
+
 end Reactor;

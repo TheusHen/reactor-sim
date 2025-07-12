@@ -1,0 +1,11 @@
+[package]
+name = "reactor_sim_cli"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+[dependencies]
+crossterm = "0.27"
+csv = "1.3"
+once_cell = "1.19"
+libc = "0.2"
